@@ -1,7 +1,9 @@
 package com.niko.myunityplugin;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -11,12 +13,23 @@ import android.view.KeyEvent;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
+import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+
 public class MainActivity extends UnityPlayerActivity {
+
+    private static final int TAKE_PHOTO = 1;
+    private static final int OPEN_GALLERY = 2;
+    private static final int CROP_PHOTO = 3;
+    private Uri mPhotoUri;
+    private Uri mCropPhotoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -25,12 +38,12 @@ public class MainActivity extends UnityPlayerActivity {
     }
 
     public void TakePhoto(){
-        //File file = new File(Environment.getExternalStorageDirectory(), "temp.jpg");
-        //Uri photoUri = FileProvider.getUriForFile(this, "com.niko.myunityplugin.fileprovider", file);
-
+        mPhotoUri = GetUri(CreateFile("temp.jpg"));
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-        startActivityForResult(intent, 1);
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
+        startActivityForResult(intent, TAKE_PHOTO);
 
     }
 
@@ -39,77 +52,127 @@ public class MainActivity extends UnityPlayerActivity {
     {
         Intent intent = new Intent(Intent.ACTION_PICK,null);
         intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
-        startActivityForResult(intent, 2);
+        startActivityForResult(intent, OPEN_GALLERY);
     }
 
-    public boolean onKeyDown(int keyCode, KeyEvent event)
+    private Uri GetUri(File file)
     {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0)
+        Uri uri;
+        if(Build.VERSION.SDK_INT >= 24)
         {
-            //当用户点击返回键是 通知Unity开始在"/mnt/sdcard/Android/data/com.xys/files";路径中读取图片资源，并且现在在Unity中
-            //UnityPlayer.UnitySendMessage("Main Camera","message", "image.png");
-
+            uri = FileProvider.getUriForFile(this, "com.niko.myunityplugin.fileprovider", file);
         }
-        return super.onKeyDown(keyCode, event);
+        else
+        {
+            uri = Uri.fromFile(file);
+        }
+
+        return uri;
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    private File CreateFile(String name)
     {
-        if(requestCode == 1)
+        File file = new File(Environment.getExternalStorageDirectory(), "tempCrop.jpg");
+        try
         {
-            Bundle extras = data.getExtras();
-            if(extras != null)
+            if(file.exists())
             {
-                Bitmap bitmap = extras.getParcelable("data");
-                FileOutputStream fOut = null;
-                String path = "/mnt/sdcard/Android/data/com.niko.myunityplugin/files";
+                file.delete();
+            }
+            file.createNewFile();
+        }catch(IOException e)
+        {
+            e.printStackTrace();
+        }
 
-                try {
-                    File destDir = new File(path);
-                    if(!destDir.exists())
+        return file;
+    }
+
+    private void StatCrop(Uri inputUri)
+    {
+        mCropPhotoUri = Uri.fromFile(CreateFile("tempCrop.jpg"));
+
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.addFlags(FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(FLAG_GRANT_WRITE_URI_PERMISSION);
+        intent.setDataAndType(inputUri, "image/*");
+        intent.putExtra("crop", "true");
+        // aspectX aspectY 是宽高的比例
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+        // outputX outputY 是裁剪图片宽高
+        intent.putExtra("outputX", 300);
+        intent.putExtra("outputY", 300);
+        intent.putExtra("scale", true);
+        intent.putExtra("return-data", false);
+        intent.putExtra("noFaceDetection", true);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, mCropPhotoUri);
+        startActivityForResult(intent, CROP_PHOTO);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        switch (requestCode)
+        {
+            case TAKE_PHOTO:
+            {
+                StatCrop(mPhotoUri);
+            }
+            break;
+            case OPEN_GALLERY:
+            {
+                Uri uri = data.getData();
+                StatCrop(uri);
+            }
+            break;
+            case CROP_PHOTO:
+            {
+                try
+                {
+                    Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(mCropPhotoUri));
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                    byte[] bytes = baos.toByteArray();
+
+                    FileOutputStream fOut = null;
+
+                    try
                     {
-                        destDir.mkdirs();
+                        String path = "/mnt/sdcard/Android/data/com.niko.myunityplugin/files";
+                        File destDir = new File(path);
+                        if(!destDir.exists())
+                        {
+                            destDir.mkdirs();
+                        }
+
+                        fOut = new FileOutputStream(path + "/" + "image.png");
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        e.printStackTrace();
                     }
 
-                    fOut = new FileOutputStream(path + "/" + "image.png");
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+                    try {
+                        fOut.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        fOut.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    UnityPlayer.UnitySendMessage("Main Camera","message", "image");
                 }
-                catch (FileNotFoundException e)
+                catch(FileNotFoundException e)
                 {
                     e.printStackTrace();
                 }
-
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-                try {
-                    fOut.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    fOut.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                UnityPlayer.UnitySendMessage("Main Camera","message", "image.png");
             }
-        }
-        else if(requestCode == 3)
-        {
-            File file = new File(Environment.getExternalStorageDirectory(), "temp.jpg");
-            Uri photoUri = FileProvider.getUriForFile(this, "com.niko.myunityplugin.fileprovider", file);
-
-            Intent intent = new Intent("com.android.camera.action.CROP");
-            intent.setDataAndType(photoUri, "image/*");
-            intent.putExtra("crop", "true");
-            // aspectX aspectY 是宽高的比例
-            intent.putExtra("aspectX", 1);
-            intent.putExtra("aspectY", 1);
-            // outputX outputY 是裁剪图片宽高
-            intent.putExtra("outputX", 300);
-            intent.putExtra("outputY", 300);
-            intent.putExtra("return-data", true);
-            startActivityForResult(intent, 1);
+            break;
         }
     }
-
 }

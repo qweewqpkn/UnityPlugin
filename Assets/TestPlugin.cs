@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,11 +28,18 @@ public class TestPlugin : MonoBehaviour {
         });
     }
 
+    public void TakePhoto(Action<byte[]> callback)
+    {
+        AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>("currentActivity");
+        jo.Call("TakePhoto");
+    }
+
     void message(string str)
     {
         //在Android插件中通知Unity开始去指定路径中找图片资源
         StartCoroutine(LoadTexture(str));
-
+        
     }
 
     IEnumerator LoadTexture(string name)

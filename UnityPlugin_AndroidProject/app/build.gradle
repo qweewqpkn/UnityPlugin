@@ -18,7 +18,6 @@ android {
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation files('libs/classes.jar')
+    compileOnly files('libs/classes.jar')
     implementation files('libs/support-core-utils-26.1.0.jar')
 }
