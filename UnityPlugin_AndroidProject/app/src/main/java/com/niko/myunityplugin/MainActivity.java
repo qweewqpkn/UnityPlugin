@@ -1,4 +1,5 @@
 package com.niko.myunityplugin;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.unity3d.player.UnityPlayer;
@@ -38,7 +40,7 @@ public class MainActivity extends UnityPlayerActivity {
     }
 
     public void TakePhoto(){
-        mPhotoUri = GetUri(CreateFile("temp.jpg"));
+        mPhotoUri = GetUri(CreateFile("temp.png"));
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -72,7 +74,7 @@ public class MainActivity extends UnityPlayerActivity {
 
     private File CreateFile(String name)
     {
-        File file = new File(Environment.getExternalStorageDirectory(), "tempCrop.jpg");
+        File file = new File(Environment.getExternalStorageDirectory(), name);
         try
         {
             if(file.exists())
@@ -88,9 +90,9 @@ public class MainActivity extends UnityPlayerActivity {
         return file;
     }
 
-    private void StatCrop(Uri inputUri)
+    private void StartCrop(Uri inputUri)
     {
-        mCropPhotoUri = Uri.fromFile(CreateFile("tempCrop.jpg"));
+        mCropPhotoUri = Uri.fromFile(CreateFile("tempCrop.png"));
 
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.addFlags(FLAG_GRANT_READ_URI_PERMISSION);
@@ -112,17 +114,23 @@ public class MainActivity extends UnityPlayerActivity {
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+        if(resultCode == Activity.RESULT_CANCELED)
+        {
+            Log.d("unity","user cancel operator!!");
+            return;
+        }
+
         switch (requestCode)
         {
             case TAKE_PHOTO:
             {
-                StatCrop(mPhotoUri);
+                StartCrop(mPhotoUri);
             }
             break;
             case OPEN_GALLERY:
             {
                 Uri uri = data.getData();
-                StatCrop(uri);
+                StartCrop(uri);
             }
             break;
             case CROP_PHOTO:
@@ -130,11 +138,6 @@ public class MainActivity extends UnityPlayerActivity {
                 try
                 {
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(mCropPhotoUri));
-
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                    byte[] bytes = baos.toByteArray();
-
                     FileOutputStream fOut = null;
 
                     try
@@ -153,19 +156,22 @@ public class MainActivity extends UnityPlayerActivity {
                         e.printStackTrace();
                     }
 
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-                    try {
-                        fOut.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        fOut.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    if(bitmap != null)
+                    {
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+                        try {
+                            fOut.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            fOut.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                    UnityPlayer.UnitySendMessage("Main Camera","message", "image");
+                        UnityPlayer.UnitySendMessage("UnityPlugin","OnGetPhoto", "image.png");
+                    }
                 }
                 catch(FileNotFoundException e)
                 {

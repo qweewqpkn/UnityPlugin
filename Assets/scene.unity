@@ -726,7 +726,7 @@ GameObject:
   - component: {fileID: 1693220938}
   - component: {fileID: 1693220937}
   m_Layer: 0
-  m_Name: Main Camera
+  m_Name: UnityPlugin
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -745,8 +745,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mBtnCamera: {fileID: 453711635}
   mBtnGallery: {fileID: 1589570954}
-  mText: {fileID: 1738659285}
   mImage: {fileID: 439860061}
+  mText: {fileID: 1738659285}
 --- !u!81 &1693220938
 AudioListener:
   m_ObjectHideFlags: 0
