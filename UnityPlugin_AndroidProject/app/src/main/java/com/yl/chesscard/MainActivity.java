@@ -1,4 +1,4 @@
-package com.niko.myunityplugin;
+package com.yl.chesscard;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,13 +10,10 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
-import android.view.KeyEvent;
 
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -62,7 +59,7 @@ public class MainActivity extends UnityPlayerActivity {
         Uri uri;
         if(Build.VERSION.SDK_INT >= 24)
         {
-            uri = FileProvider.getUriForFile(this, "com.niko.myunityplugin.fileprovider", file);
+            uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
         }
         else
         {

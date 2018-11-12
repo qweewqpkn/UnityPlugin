@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{E01B37B3-ED90-2420-2036-A00E4A6D9613}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityPlugin", "UnityPlugin.csproj", "{00F325FD-650C-4306-CDD7-3A7FF2AA249B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +9,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E01B37B3-ED90-2420-2036-A00E4A6D9613}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E01B37B3-ED90-2420-2036-A00E4A6D9613}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E01B37B3-ED90-2420-2036-A00E4A6D9613}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E01B37B3-ED90-2420-2036-A00E4A6D9613}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00F325FD-650C-4306-CDD7-3A7FF2AA249B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00F325FD-650C-4306-CDD7-3A7FF2AA249B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00F325FD-650C-4306-CDD7-3A7FF2AA249B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00F325FD-650C-4306-CDD7-3A7FF2AA249B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
