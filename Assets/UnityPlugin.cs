@@ -9,14 +9,14 @@ public class UnityPlugin : MonoBehaviour {
     public Button mBtnGallery;
     public RawImage mImage;
     public Text mText;
-    private Action<byte[]> mPhotoAction;
+    private Action<Texture> mPhotoAction;
 
-    private UnityPlugin mInstance;
-    public UnityPlugin Instance
+    private static UnityPlugin mInstance;
+    public static UnityPlugin Instance
     {
         get
         {
-            if(mInstance = null)
+            if(mInstance == null)
             {
                 GameObject obj = new GameObject();
                 obj.name = "UnityPlugin";
@@ -47,7 +47,7 @@ public class UnityPlugin : MonoBehaviour {
         });
     }
 
-    public void TakePhoto(Action<byte[]> callback)
+    public void TakePhoto(Action<Texture> callback)
     {
         AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>("currentActivity");
@@ -55,7 +55,7 @@ public class UnityPlugin : MonoBehaviour {
         mPhotoAction = callback;
     }
 
-    public void OpenGallery(Action<byte[]> callback)
+    public void OpenGallery(Action<Texture> callback)
     {
         AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>("currentActivity");
@@ -77,7 +77,7 @@ public class UnityPlugin : MonoBehaviour {
         mImage.texture = www.texture;
         if (mPhotoAction != null)
         {
-            mPhotoAction(((Texture2D)mImage.texture).EncodeToPNG());
+            mPhotoAction(mImage.texture);
             mPhotoAction = null;
             //Destroy(texture);
         }
