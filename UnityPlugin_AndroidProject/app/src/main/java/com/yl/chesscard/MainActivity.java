@@ -139,7 +139,8 @@ public class MainActivity extends UnityPlayerActivity {
 
                     try
                     {
-                        String path = "/mnt/sdcard/Android/data/com.niko.myunityplugin/files";
+                        String path = "/mnt/sdcard/Android/data/" + getPackageName() + "/files";
+
                         File destDir = new File(path);
                         if(!destDir.exists())
                         {

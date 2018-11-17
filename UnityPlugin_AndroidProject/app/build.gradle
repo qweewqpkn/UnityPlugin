@@ -19,5 +19,5 @@ android {
 
 dependencies {
     compileOnly files('libs/classes.jar')
-    implementation files('libs/support-core-utils-26.1.0.jar')
+    implementation files('libs/support-core-utils-26.1.0-sources.jar')
 }
