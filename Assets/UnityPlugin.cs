@@ -7,8 +7,10 @@ using UnityEngine.UI;
 public class UnityPlugin : MonoBehaviour {
     public Button mBtnCamera;
     public Button mBtnGallery;
+    public Button mBtnGetNotch;
     public RawImage mImage;
-    public Text mText;
+    public Text mNotchText;
+    public Text mDeviceInfo;
     private Action<Texture> mPhotoAction;
 
     private static UnityPlugin mInstance;
@@ -30,6 +32,8 @@ public class UnityPlugin : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        mDeviceInfo.text = "/deviceModel : " + SystemInfo.deviceModel + "/deviceName : " + SystemInfo.deviceName + "/deviceType" + SystemInfo.deviceType;
+
         mBtnCamera.onClick.AddListener(() =>
         {
             TakePhoto((datas)=>
@@ -44,6 +48,11 @@ public class UnityPlugin : MonoBehaviour {
             {
 
             });
+        });
+
+        mBtnGetNotch.onClick.AddListener(() =>
+        {
+            mNotchText.text = "刘海高度 :" + GetNotchHeight();
         });
     }
 
@@ -63,6 +72,13 @@ public class UnityPlugin : MonoBehaviour {
         mPhotoAction = callback;
     }
 
+    public int GetNotchHeight()
+    {
+        AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>("currentActivity");
+        return jo.Call<int>("GetNotchHeight");
+    }
+
     void OnGetPhoto(string name)
     {
         StartCoroutine(LoadPhoto(name));
@@ -70,7 +86,6 @@ public class UnityPlugin : MonoBehaviour {
 
     IEnumerator LoadPhoto(string name)
     {
-        mText.text = name;
         string path = "file://" + Application.persistentDataPath + "/" + name;
         WWW www = new WWW(path);
         yield return www;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.yl.chesscard">
+    package="com.jiuyou.game99">
 
     <application
         android:allowBackup="true"
@@ -9,7 +9,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:screenOrientation="landscape" android:name="com.yl.chesscard.MainActivity">
+        <meta-data android:name="android.notch_support" android:value="true"/>
+        <meta-data android:name="notch.config" android:value="landscape"/>
+        <activity android:screenOrientation="landscape" android:name="com.jiuyou.game99.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,7 +21,7 @@
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.yl.chesscard.fileprovider"
+            android:authorities="com.jiuyou.game99.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
